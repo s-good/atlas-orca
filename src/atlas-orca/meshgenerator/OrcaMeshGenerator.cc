@@ -545,7 +545,7 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
                     xy_file << inode << ", " << nodes.xy( inode, 0 ) << ", " << nodes.xy( inode, 1 ) << std::endl;
                     lonlat_file << inode << ", " << nodes.lonlat( inode, 0 ) << ", " << nodes.lonlat( inode, 1 ) << std::endl;
                 }
-                is_node_file << inode << ", " << SR.is_node[ii] << std::endl;
+                is_node_file << SR.is_node[ii] << std::endl;
             }
         }
     }
