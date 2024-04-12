@@ -345,10 +345,10 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
 
     std::vector<idx_t> node_index( SR.size, -1 );
 
-    stringstream file_spec;
+    std::stringstream file_spec;
     file_spec << orca.type() << "_" << distribution.type() << nparts << "_" << mypart_;
 
-    ofstream summary_file, partition_file, ghost_file, is_node_file, xy_file, lonlat_file;
+    std::ofstream summary_file, partition_file, ghost_file, is_node_file, xy_file, lonlat_file, cells_file;
     summary_file.open(file_spec.str() + "_summary.txt");
     partition_file.open(file_spec.str() + "_partition.txt");
     ghost_file.open(file_spec.str() + "_ghost.txt");
@@ -539,13 +539,13 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
                         }
                         return 0;
                     }();
+                    // print diagnostic properties of nodes
+                    partition_file << inode << ", " << nodes.part( inode ) << std::endl;
+                    ghost_file << inode << ", " << nodes.ghost( inode ) << std::endl;
+                    xy_file << inode << ", " << nodes.xy( inode, 0 ) << ", " << nodes.xy( inode, 1 ) << std::endl;
+                    lonlat_file << inode << ", " << nodes.lonlat( inode, 0 ) << ", " << nodes.lonlat( inode, 1 ) << std::endl;
                 }
-            // print diagnostic properties of nodes
-            partition_file << inode << ", " << nodes.part( inode ) << std::endl;
-            ghost_file << inode << ", " << nodes.ghost( inode ) << std::endl;
-            is_node_file << inode << ", " << SR.is_node[ii] << std::endl;
-            xy_file << inode << ", " << nodes.xy( inode, 0 ) << ", " << nodes.xy( inode, 1 ) << std::endl;
-            lonlat_file << inode << ", " << nodes.lonlat( inode, 0 ) << ", " << nodes.lonlat( inode, 1 ) << std::endl;
+                is_node_file << inode << ", " << SR.is_node[ii] << std::endl;
             }
         }
     }
