@@ -15,6 +15,8 @@
 #include <tuple>
 #include <unordered_set>
 #include <utility>
+#include <fstream>
+#include <sstream>
 
 #include "eckit/utils/Hash.h"
 
@@ -343,6 +345,29 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
 
     std::vector<idx_t> node_index( SR.size, -1 );
 
+    stringstream file_spec;
+    file_spec << orca.type() << "_" << distribution.type() << nparts << "_" << mypart_;
+
+    ofstream summary_file, partition_file, ghost_file, is_node_file, xy_file, lonlat_file;
+    summary_file.open(file_spec.str() + "_summary.txt");
+    partition_file.open(file_spec.str() + "_partition.txt");
+    ghost_file.open(file_spec.str() + "_ghost.txt");
+    is_node_file.open(file_spec.str() + "_is_node.txt");
+    xy_file.open(file_spec.str() + "_xy.txt");
+    lonlat_file.open(file_spec.str() + "_lonlat.txt");
+    cells_file.open(file_spec.str() + "_cells.txt");
+
+    summary_file << "SR.nx " << SR.nx
+                 << "\nSR.ny " << SR.ny
+                 << "\nSR.ix_min " << SR.ix_min
+                 << "\nSR.ix_max " << SR.ix_max
+                 << "\nSR.iy_min " << SR.iy_min
+                 << "\nSR.iy_max " << SR.iy_max
+                 << "\nSR.nb_nodes " << SR.nb_nodes
+                 << "\nSR.nb_cells " << SR.nb_cells
+                 << "\nSR.nb_nodes_owned " << SR.nb_nodes_owned
+                 << std::endl;
+
     {
         ATLAS_TRACE( "nodes" );
 
@@ -350,6 +375,7 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
         inode_nonghost = 0;
         inode_ghost    = SR.nb_nodes_owned;  // ghost nodes start counting after nonghost nodes
 
+        std::cout << 
         ATLAS_TRACE_SCOPE( "indexing" )
         for ( idx_t iy = 0; iy < SR.ny; iy++ ) {
             idx_t iy_glb = SR.iy_min + iy;
@@ -514,6 +540,12 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
                         return 0;
                     }();
                 }
+            // print diagnostic properties of nodes
+            partition_file << inode << ", " << nodes.part( inode ) << std::endl;
+            ghost_file << inode << ", " << nodes.ghost( inode ) << std::endl;
+            is_node_file << inode << ", " << SR.is_node[ii] << std::endl;
+            xy_file << inode << ", " << nodes.xy( inode, 0 ) << ", " << nodes.xy( inode, 1 ) << std::endl;
+            lonlat_file << inode << ", " << nodes.lonlat( inode, 0 ) << ", " << nodes.lonlat( inode, 1 ) << std::endl;
             }
         }
     }
@@ -607,6 +639,10 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
                     if ( orca.invalidElement( SR.ix_min + ix, SR.iy_min + iy ) ) {
                         cells.flags( jcell ).set( Topology::INVALID );
                     }
+                    cells_file << inode << ", " << quad_nodes[0]
+                                        << ", " << quad_nodes[1]
+                                        << ", " << quad_nodes[2]
+                                        << ", " << quad_nodes[3] << std::endl;
                 }
             }
         }
@@ -629,6 +665,14 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
     mesh.metadata().set( "halo_locked", true );
     mesh.nodes().metadata().set( "NbRealPts", static_cast<size_t>( nnodes ) );
     mesh.nodes().metadata().set( "NbVirtualPts", static_cast<size_t>( 0 ) );
+
+    summary_file.close();
+    partition_file.close();
+    ghost_file.close();
+    is_node_file.close();
+    xy_file.close();
+    lonlat_file.close();
+    cells_file.close();
 }
 
 using Unique2Node = std::map<gidx_t, idx_t>;
