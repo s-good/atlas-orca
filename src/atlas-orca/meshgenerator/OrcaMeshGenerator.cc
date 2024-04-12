@@ -639,7 +639,7 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
                     if ( orca.invalidElement( SR.ix_min + ix, SR.iy_min + iy ) ) {
                         cells.flags( jcell ).set( Topology::INVALID );
                     }
-                    cells_file << inode << ", " << quad_nodes[0]
+                    cells_file << jcell << ", " << quad_nodes[0]
                                         << ", " << quad_nodes[1]
                                         << ", " << quad_nodes[2]
                                         << ", " << quad_nodes[3] << std::endl;
