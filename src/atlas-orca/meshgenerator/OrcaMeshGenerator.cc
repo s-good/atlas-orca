@@ -346,7 +346,7 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
     std::vector<idx_t> node_index( SR.size, -1 );
 
     std::stringstream file_spec;
-    file_spec << orca.type() << "_" << distribution.type() << nparts << "_" << mypart_;
+    file_spec << orca.name() << "_" << distribution.type() << nparts << "_" << mypart_;
 
     std::ofstream summary_file, partition_file, ghost_file, is_node_file, xy_file, lonlat_file, cells_file;
     summary_file.open(file_spec.str() + "_summary.txt");
@@ -375,7 +375,6 @@ void OrcaMeshGenerator::generate( const Grid& grid, const grid::Distribution& di
         inode_nonghost = 0;
         inode_ghost    = SR.nb_nodes_owned;  // ghost nodes start counting after nonghost nodes
 
-        std::cout << 
         ATLAS_TRACE_SCOPE( "indexing" )
         for ( idx_t iy = 0; iy < SR.ny; iy++ ) {
             idx_t iy_glb = SR.iy_min + iy;
